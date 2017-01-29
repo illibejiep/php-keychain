@@ -40,6 +40,7 @@ keys_storage * hash_chaining_storage_create(size_t key_size)
 
     hash_chaining_storage* storage = emalloc(sizeof(hash_chaining_storage));
 
+    storage->base.error = NULL;
     storage->base.count = 0;
     storage->base.key_size = key_size;
 
@@ -275,6 +276,11 @@ static bool free_storage(hash_chaining_storage* _self)
             currentBucket = nextBacket;
             nextBacket = currentBucket ? currentBucket->next : NULL;
         }
+    }
+
+    if (_self->base.error) {
+        efree(_self->base.error);
+        _self->base.error = NULL;
     }
 
     efree(_self->table);

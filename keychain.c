@@ -7,6 +7,12 @@
 #include "storage/hash_chaining_storage.h"
 #include "storage/open_addressing_storage.h"
 
+#define CHECK_STORAGE_ERROR \
+    if (storage->error) { \
+        zend_throw_exception(keychain_exception_ce, "unknown storage type", 1); \
+        return; \
+    } \
+
 zend_module_entry keychain_module_entry = {
 #if ZEND_MODULE_API_NO >= 20010901
     STANDARD_MODULE_HEADER,
@@ -42,7 +48,7 @@ zend_class_entry *keychain_ce;
 zend_class_entry *keychain_exception_ce;
 zend_object_handlers keychain_class_handlers;
 
-void keychain_init(TSRMLS_D) {
+static void keychain_init(TSRMLS_D) {
     //printf("init class\n");
     zend_class_entry ce;
 
@@ -91,7 +97,7 @@ static zend_object* keychain_create_object(zend_class_entry *ce TSRMLS_DC)
     return &(obj->zobj);
 }
 
-void keychain_destroy_object(zend_object *object)
+static void keychain_destroy_object(zend_object *object)
 {
     //printf("destroy\n");
 
@@ -99,7 +105,7 @@ void keychain_destroy_object(zend_object *object)
     //printf("destroy\n");
 }
 
-void keychain_free_object(zend_object *object)
+static void keychain_free_object(zend_object *object)
 {
     //printf("free\n");
     keychain_zend_object* keychain_obj = php_custom_object_fetch_object(object);
@@ -153,6 +159,7 @@ PHP_METHOD(Keychain, __construct) {
     zend_update_property_long(keychain_ce, getThis(), "count", strlen("count"), storage->count TSRMLS_CC);
     zend_update_property_long(keychain_ce, getThis(), "allocated", strlen("allocated"), storage->allocated TSRMLS_CC);
 
+    CHECK_STORAGE_ERROR
     //printf("created %p\n", storage);
 }
 
@@ -177,6 +184,8 @@ PHP_METHOD(Keychain, add) {
     bool result = storage->add(storage, key);
 
     efree(key);
+
+    CHECK_STORAGE_ERROR
 
     zend_update_property_long(keychain_ce, getThis(), "count", strlen("count"), storage->count TSRMLS_CC);
     zend_update_property_long(keychain_ce, getThis(), "allocated", strlen("allocated"), storage->allocated TSRMLS_CC);
@@ -203,6 +212,8 @@ PHP_METHOD(Keychain, del) {
 
     efree(key);
 
+    CHECK_STORAGE_ERROR
+
     zend_update_property_long(keychain_ce, getThis(), "count", strlen("count"), storage->count TSRMLS_CC);
     zend_update_property_long(keychain_ce, getThis(), "allocated", strlen("allocated"), storage->allocated TSRMLS_CC);
 
@@ -227,6 +238,8 @@ ZEND_METHOD(Keychain, has) {
     bool result = storage->has(storage, key);
 
     efree(key);
+
+    CHECK_STORAGE_ERROR
 
     RETURN_BOOL(result);
 }

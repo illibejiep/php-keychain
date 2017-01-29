@@ -28,6 +28,7 @@ keys_storage * open_addressing_storage_create(size_t key_size)
 {
     open_addressing_storage* storage = emalloc(sizeof(open_addressing_storage));
 
+    storage->base.error = NULL;
     storage->base.count = 0;
     storage->base.key_size = key_size;
     storage->base.allocated = INIT_NSIZE*key_size;
@@ -126,7 +127,7 @@ static inline size_t find_key(open_addressing_storage* _self, char str[static 1]
 static bool add(open_addressing_storage* _self, char str[static 1])
 {
     if (_self->base.add != (add_storage_method)add) {
-        keys_storage_errno = WRONG_STORAGE_OBJECT_ERRNO;
+        _self->base.error = "wrong storage object";
         return false;
     }
 
@@ -167,7 +168,7 @@ static bool add(open_addressing_storage* _self, char str[static 1])
 static bool del(open_addressing_storage* _self, char str[static 1])
 {
     if (_self->base.del != (del_storage_method)del) {
-        keys_storage_errno = WRONG_STORAGE_OBJECT_ERRNO;
+        _self->base.error = "wrong storage object";
         return false;
     }
 
@@ -186,7 +187,7 @@ static bool del(open_addressing_storage* _self, char str[static 1])
 static bool has(open_addressing_storage* _self, char str[static 1])
 {
     if (_self->base.has != (has_storage_method)has) {
-        keys_storage_errno = WRONG_STORAGE_OBJECT_ERRNO;
+        _self->base.error = "wrong storage object";
         return false;
     }
 
@@ -207,8 +208,13 @@ static bool has(open_addressing_storage* _self, char str[static 1])
 static bool free_storage(open_addressing_storage* _self)
 {
     if (_self->base.free_storage != (free_storage_storage_method)free_storage) {
-        keys_storage_errno = WRONG_STORAGE_OBJECT_ERRNO;
+        _self->base.error = "wrong storage object";
         return false;
+    }
+
+    if (_self->base.error) {
+        efree(_self->base.error);
+        _self->base.error = NULL;
     }
 
     efree(_self->table);

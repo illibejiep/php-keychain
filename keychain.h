@@ -27,8 +27,8 @@ struct keychain_zend_object {
 };
 
 static zend_object* keychain_create_object(zend_class_entry *ce);
-void keychain_destroy_object(zend_object *object);
-void keychain_free_object(zend_object *object);
+static void keychain_destroy_object(zend_object *object);
+static void keychain_free_object(zend_object *object);
 
 
 static inline keychain_zend_object* php_custom_object_fetch_object(zend_object *obj) {

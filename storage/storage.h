@@ -20,16 +20,11 @@ struct keys_storage {
     size_t key_size;
     size_t allocated;
     float alfa;
+    char* error;
     add_storage_method add;
     del_storage_method del;
     has_storage_method has;
     free_storage_storage_method free_storage;
 };
-
-#define WRONG_STORAGE_OBJECT_ERRNO 1
-#define WRONG_KEY_ERRNO 2
-
-extern size_t keys_storage_errno;
-extern char* keys_storage_errors[3];
 
 #endif //KEYCHAIN_STORAGE_H
