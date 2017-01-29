@@ -157,15 +157,6 @@ PHP_METHOD(Keychain, __construct) {
 }
 
 PHP_METHOD(Keychain, add) {
-
-    HashTable* arr;
-    ALLOC_HASHTABLE(arr);
-    ZEND_INIT_SYMTABLE_EX(arr, 32, 0);
-
-    zend_hash_copy(arr, EG(function_table), NULL);
-
-    RETURN_ARR(arr);
-
     char* str;
     size_t len;
 
