@@ -22,7 +22,7 @@ static bool has(open_addressing_storage* _self, char str[static 1]);
 static bool free_storage(open_addressing_storage* _self);
 
 static size_t hash(char str[static 1], size_t  len);
-static size_t rehash(size_t hash, char str[static 1], size_t len);
+static size_t hash2(size_t hash);
 
 keys_storage * open_addressing_storage_create(size_t key_size)
 {
@@ -50,16 +50,12 @@ static size_t hash(char str[static 1], size_t len)
     for (size_t i=0; i < len ; i++)
         hash = ((hash << 5) + hash) + str[i]; /* hash * 33 + c */
 
-    return hash % 18446744073709551557;
+    return hash;
 }
 
-static size_t rehash(size_t hash, char str[static 1], size_t len)
+static size_t hash2(size_t hash)
 {
-    size_t new_hash = 0;
-    for (size_t i=0; i < len ; i++)
-        new_hash = new_hash*5 + str[i]; /* hash * 33 + c */
-
-    return  hash + new_hash;
+    return (997 - hash%997);
 }
 
 static inline bool is_available(table* table, size_t pos, size_t key_size)
@@ -115,7 +111,7 @@ static inline size_t find_key(open_addressing_storage* _self, char str[static 1]
         return pos;
 
     while (!is_empty(_self->table, pos, _self->base.key_size)) {
-        h = rehash(h, str, _self->base.key_size);
+        h += hash2(h);
         pos = h & (_self->table->size - 1);
         if (cmpkey(_self->table, str, pos, _self->base.key_size))
             return pos;
@@ -143,7 +139,7 @@ static bool add(open_addressing_storage* _self, char str[static 1])
         available_pos = pos;
 
     while (!is_empty(_self->table, pos, _self->base.key_size)) {
-        h = rehash(h, str, _self->base.key_size);
+        h += hash2(h);
         pos = h & (_self->table->size - 1);
         //printf("pos:%d\thash:%d\n", pos, h);
         if (cmpkey(_self->table, str, pos, _self->base.key_size))
